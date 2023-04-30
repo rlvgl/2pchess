@@ -1,0 +1,9 @@
+syntax = "proto3";
+package rpc;
+option go_package = "github.com/rlvgl/2pchess/rpc";
+
+service Game {
+  rpc Move(MoveData) returns (MoveData) {};
+}
+
+message MoveData { string move = 1; }

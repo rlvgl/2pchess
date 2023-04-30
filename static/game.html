@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>New Game</title>
+	</head>
+	<body>
+		<div>
+			<h1>New Chess Game</h1>
+			<div id="board"></div>
+			<p id="board-p"></p>
+			<input id="move-input" type="text" size="20" />
+			<button onclick="send()">Send</button>
+			<pre id="output"></pre>
+		</div>
+	</body>
+	<style>
+		html {
+			text-align: center;
+			font-size: 16px;
+		}
+		div {
+			padding: 1em;
+		}
+	</style>
+	<script>
+		const board = document.getElementById('board');
+		const boardP = document.getElementById('board-p');
+		const input = document.getElementById('move-input');
+		const output = document.getElementById('output');
+
+		var socket = new WebSocket('ws://localhost:8080/game');
+
+		socket.onopen = function () {
+			output.innerHTML += 'Status: Connected\n';
+		};
+
+		socket.onmessage = function (e) {
+			const board = parseResponse(e);
+			boardP.innerText = board;
+		};
+
+		function send() {
+			socket.send(input.value);
+			input.value = '';
+		}
+
+		const parseResponse = (bytes) => {
+			let curString = bytes.data;
+
+			let board = [[], [], [], [], [], [], [], []];
+
+			for (let i = 0; i < 8; i++) {
+				for (let j = 0; j < 8; j++) {
+					let val = 160;
+					if (curString[0] == '9') {
+						val = curString.slice(0, 4);
+						curString = curString.slice(4);
+					} else {
+						curString = curString.slice(3);
+					}
+
+					board[i].push(String.fromCharCode(Number.parseInt(val)));
+				}
+			}
+
+			let boardStr = '';
+
+			for (let i = 0; i < 8; i++) {
+				boardStr += board[i].join('') + '\n';
+			}
+
+			console.log(boardStr);
+			return boardStr;
+		};
+	</script>
+</html>
